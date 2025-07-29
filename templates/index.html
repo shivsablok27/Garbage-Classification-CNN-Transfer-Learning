@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Trash Classifier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f, #f6f578, #a1ffce);
+            background-size: 400% 400%;
+            animation: bgFlow 20s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        @keyframes bgFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            width: 95%;
+            text-align: center;
+            backdrop-filter: blur(15px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        input[type="file"] {
+            margin: 10px 0 20px;
+            padding: 12px;
+            border: 2px dashed #aaa;
+            border-radius: 12px;
+            background-color: #fff;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: #16a085;
+            background-color: #e8fff3;
+        }
+
+        #preview {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            display: none;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.6s ease, opacity 0.6s ease;
+            border: 4px solid #999;
+            margin-top: 20px;
+        }
+
+        #preview.show {
+            display: block;
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 14px 30px;
+            background: #f0f0f0;
+            color: #222;
+            border: none;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #222;
+            color: white;
+            transform: scale(1.03);
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            background: #111;
+            color: white;
+            transform: scale(0.98);
+        }
+
+        .camera-section {
+            margin: 20px 0;
+        }
+
+        #camera {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 4px solid #999;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            margin-top: 10px;
+        }
+
+        #clickBtn {
+            display: none;
+        }
+
+        #result {
+            padding: 22px 18px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            color: #2c3e50;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .dance {
+            animation: danceIn 1s ease;
+        }
+
+        @keyframes danceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) rotate(-2deg);
+            }
+
+            50% {
+                transform: scale(1.05) rotate(2deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #result h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        #result p {
+            margin: 8px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        #result p strong {
+            color: #00b894;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            input[type="file"] {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Trash Classification</h1>
+
+        <!-- Upload Image -->
+        <input type="file" id="imageInput" accept="image/*" />
+
+        <!-- Camera Section -->
+        <div class="camera-section">
+            <button class="btn" onclick="startCamera()">📸 Capture from Camera</button>
+            <video id="camera" autoplay playsinline></video>
+            <button class="btn" id="clickBtn" onclick="captureFromCamera()">Click</button>
+        </div>
+
+        <!-- Image Preview -->
+        <img id="preview" src="#" alt="Image Preview" />
+
+        <!-- Predict Button -->
+        <button class="btn" id="predictBtn" onclick="predictImage()" style="display: none;">Predict</button>
+
+        <!-- Result Display -->
+        <div id="result"></div>
+    </div>
+
+ <script>
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const resultDiv = document.getElementById('result');
+    const video = document.getElementById('camera');
+    const predictBtn = document.getElementById('predictBtn');
+    const clickBtn = document.getElementById('clickBtn');
+
+    let selectedFile = null;
+    let stream = null;
+
+    // Upload image
+    imageInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            selectedFile = file;
+            preview.src = URL.createObjectURL(file);
+            preview.classList.add('show');
+            preview.style.display = 'block';
+            predictBtn.style.display = 'inline-block';
+            resultDiv.style.display = 'none';
+        }
+    });
+
+    // Start camera
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: "environment" } },
+                audio: false
+            });
+
+            video.srcObject = stream;
+            video.style.display = 'block';
+            clickBtn.style.display = 'inline-block';
+            preview.style.display = 'none';
+            predictBtn.style.display = 'none';
+            resultDiv.style.display = 'none';
+        } catch (err) {
+            alert('Camera access denied or not available.');
+            console.error(err);
+        }
+    }
+
+    // Capture from camera and stop stream
+    async function captureFromCamera() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+        selectedFile = new File([blob], 'captured.jpg', { type: 'image/jpeg' });
+
+        preview.src = URL.createObjectURL(selectedFile);
+        preview.classList.add('show');
+        preview.style.display = 'block';
+
+        predictBtn.style.display = 'inline-block';
+        video.style.display = 'none';
+        clickBtn.style.display = 'none';
+
+        // Stop camera stream
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+    }
+
+    async function predictImage() {
+        if (!selectedFile) {
+            alert('Please upload or capture an image first.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        await sendPrediction(formData);
+    }
+
+    async function sendPrediction(formData) {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const result = await response.json();
+
+        resultDiv.style.display = 'none';
+        resultDiv.classList.remove('dance');
+        void resultDiv.offsetWidth;
+
+        resultDiv.innerHTML = `
+            <h3>🧾 Result:</h3>
+            <p><strong>🗂️ Class:</strong> ${result.class}</p>
+            <p><strong>📊 Confidence:</strong> ${parseFloat(result.confidence).toFixed(2)}%</p>
+        `;
+
+        resultDiv.style.display = 'block';
+        resultDiv.classList.add('dance');
+    }
+</script>
+
+</body>
+
+</html>
