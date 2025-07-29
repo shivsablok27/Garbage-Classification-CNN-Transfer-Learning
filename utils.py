@@ -2,7 +2,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
-model = load_model('best_model.h5')
+model = load_model("best_model.h5", compile=False)
 
 class_info = {
     0: 'Cardboard',
