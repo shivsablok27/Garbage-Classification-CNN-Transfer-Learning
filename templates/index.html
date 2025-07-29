@@ -226,108 +226,108 @@
         <div id="result"></div>
     </div>
 
- <script>
-    const imageInput = document.getElementById('imageInput');
-    const preview = document.getElementById('preview');
-    const resultDiv = document.getElementById('result');
-    const video = document.getElementById('camera');
-    const predictBtn = document.getElementById('predictBtn');
-    const clickBtn = document.getElementById('clickBtn');
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const resultDiv = document.getElementById('result');
+        const video = document.getElementById('camera');
+        const predictBtn = document.getElementById('predictBtn');
+        const clickBtn = document.getElementById('clickBtn');
 
-    let selectedFile = null;
-    let stream = null;
+        let selectedFile = null;
+        let stream = null;
 
-    // Upload image
-    imageInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            selectedFile = file;
-            preview.src = URL.createObjectURL(file);
-            preview.classList.add('show');
-            preview.style.display = 'block';
-            predictBtn.style.display = 'inline-block';
-            resultDiv.style.display = 'none';
-        }
-    });
-
-    // Start camera
-    async function startCamera() {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: "environment" } },
-                audio: false
-            });
-
-            video.srcObject = stream;
-            video.style.display = 'block';
-            clickBtn.style.display = 'inline-block';
-            preview.style.display = 'none';
-            predictBtn.style.display = 'none';
-            resultDiv.style.display = 'none';
-        } catch (err) {
-            alert('Camera access denied or not available.');
-            console.error(err);
-        }
-    }
-
-    // Capture from camera and stop stream
-    async function captureFromCamera() {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
-        selectedFile = new File([blob], 'captured.jpg', { type: 'image/jpeg' });
-
-        preview.src = URL.createObjectURL(selectedFile);
-        preview.classList.add('show');
-        preview.style.display = 'block';
-
-        predictBtn.style.display = 'inline-block';
-        video.style.display = 'none';
-        clickBtn.style.display = 'none';
-
-        // Stop camera stream
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
-    }
-
-    async function predictImage() {
-        if (!selectedFile) {
-            alert('Please upload or capture an image first.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        await sendPrediction(formData);
-    }
-
-    async function sendPrediction(formData) {
-        const response = await fetch('/predict', {
-            method: 'POST',
-            body: formData,
+        // Upload image
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                selectedFile = file;
+                preview.src = URL.createObjectURL(file);
+                preview.classList.add('show');
+                preview.style.display = 'block';
+                predictBtn.style.display = 'inline-block';
+                resultDiv.style.display = 'none';
+            }
         });
 
-        const result = await response.json();
+        // Start camera
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } },
+                    audio: false
+                });
 
-        resultDiv.style.display = 'none';
-        resultDiv.classList.remove('dance');
-        void resultDiv.offsetWidth;
+                video.srcObject = stream;
+                video.style.display = 'block';
+                clickBtn.style.display = 'inline-block';
+                preview.style.display = 'none';
+                predictBtn.style.display = 'none';
+                resultDiv.style.display = 'none';
+            } catch (err) {
+                alert('Camera access denied or not available.');
+                console.error(err);
+            }
+        }
 
-        resultDiv.innerHTML = `
+        // Capture from camera and stop stream
+        async function captureFromCamera() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+            selectedFile = new File([blob], 'captured.jpg', { type: 'image/jpeg' });
+
+            preview.src = URL.createObjectURL(selectedFile);
+            preview.classList.add('show');
+            preview.style.display = 'block';
+
+            predictBtn.style.display = 'inline-block';
+            video.style.display = 'none';
+            clickBtn.style.display = 'none';
+
+            // Stop camera stream
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        async function predictImage() {
+            if (!selectedFile) {
+                alert('Please upload or capture an image first.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            await sendPrediction(formData);
+        }
+
+        async function sendPrediction(formData) {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            resultDiv.style.display = 'none';
+            resultDiv.classList.remove('dance');
+            void resultDiv.offsetWidth;
+
+            resultDiv.innerHTML = `
             <h3>🧾 Result:</h3>
             <p><strong>🗂️ Class:</strong> ${result.class}</p>
             <p><strong>📊 Confidence:</strong> ${parseFloat(result.confidence).toFixed(2)}%</p>
         `;
 
-        resultDiv.style.display = 'block';
-        resultDiv.classList.add('dance');
-    }
-</script>
+            resultDiv.style.display = 'block';
+            resultDiv.classList.add('dance');
+        }
+    </script>
 
 </body>
 
