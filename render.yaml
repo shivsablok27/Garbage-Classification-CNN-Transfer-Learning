@@ -2,8 +2,10 @@ services:
   - type: web
     name: trash-classifier
     env: python
+    pythonVersion: 3.10.13
     buildCommand: ""
     startCommand: gunicorn app:app
     envVars:
       - key: FLASK_ENV
         value: production
+
