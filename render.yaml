@@ -2,7 +2,6 @@ services:
   - type: web
     name: trash-classifier
     env: python
-    pythonVersion: 3.10.13
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
