@@ -49,6 +49,7 @@ def predict():
 # APP RUNNER
 # ----------------------------
 if __name__ == '__main__':
-    # Run the Flask app locally; debug=True helps in displaying detailed error logs in the console
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
+
 
